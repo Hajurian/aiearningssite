@@ -71,132 +71,139 @@ export default async function EarningsAnalyzer() {
   const res = await fetch("http://localhost:3000/api/aianalysis", {
     method: "GET",
   });
-  const data = await res.json();
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-slate-900">
-            NVIDIA Earnings Call Signal Extraction
-          </h1>
-          <p className="text-slate-600 text-lg">
-            AI-powered analysis of the last four quarters
-          </p>
+  if (res.status == 200) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-4xl font-bold text-slate-900">
+              NVIDIA Earnings Call Signal Extraction
+            </h1>
+            <p className="text-slate-600 text-lg">
+              AI-powered analysis of the last four quarters
+            </p>
+          </div>
+
+          {/* Overview Cards */}
+          <AnalysisOverview data={mockData} />
+
+          {/* Main Content */}
+          <Tabs defaultValue="sentiment" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger
+                value="sentiment"
+                className="flex items-center gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Sentiment Analysis
+              </TabsTrigger>
+              <TabsTrigger value="trends" className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Tone Changes
+              </TabsTrigger>
+              <TabsTrigger
+                value="strategic"
+                className="flex items-center gap-2"
+              >
+                <Target className="w-4 h-4" />
+                Strategic Focus
+              </TabsTrigger>
+              <TabsTrigger
+                value="transcripts"
+                className="flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Transcripts
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="sentiment" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-blue-600" />
+                      Management Sentiment
+                    </CardTitle>
+                    <CardDescription>
+                      Sentiment analysis of prepared executive remarks
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <SentimentChart
+                      data={mockData.quarters.map((quarter, index) => ({
+                        quarter,
+                        sentiment: mockData.managementSentiment[index],
+                      }))}
+                      type="management"
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-green-600" />
+                      Q&A Sentiment
+                    </CardTitle>
+                    <CardDescription>
+                      Sentiment analysis of Q&A session interactions
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <SentimentChart
+                      data={mockData.quarters.map((quarter, index) => ({
+                        quarter,
+                        sentiment: mockData.qaSentiment[index],
+                      }))}
+                      type="qa"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="trends" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                    Quarter-over-Quarter Tone Changes
+                  </CardTitle>
+                  <CardDescription>
+                    Comparative analysis of sentiment shifts across quarters
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ToneChangeChart data={mockData} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="strategic" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-orange-600" />
+                    Strategic Focus Areas
+                  </CardTitle>
+                  <CardDescription>
+                    Key themes and initiatives emphasized each quarter
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <StrategicFocusChart data={mockData} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="transcripts" className="space-y-6">
+              <TranscriptViewer data={mockData} />
+            </TabsContent>
+          </Tabs>
         </div>
-
-        {/* Overview Cards */}
-        <AnalysisOverview data={mockData} />
-
-        {/* Main Content */}
-        <Tabs defaultValue="sentiment" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="sentiment" className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4" />
-              Sentiment Analysis
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Tone Changes
-            </TabsTrigger>
-            <TabsTrigger value="strategic" className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Strategic Focus
-            </TabsTrigger>
-            <TabsTrigger
-              value="transcripts"
-              className="flex items-center gap-2"
-            >
-              <BarChart3 className="w-4 h-4" />
-              Transcripts
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="sentiment" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-blue-600" />
-                    Management Sentiment
-                  </CardTitle>
-                  <CardDescription>
-                    Sentiment analysis of prepared executive remarks
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <SentimentChart
-                    data={mockData.quarters.map((quarter, index) => ({
-                      quarter,
-                      sentiment: mockData.managementSentiment[index],
-                    }))}
-                    type="management"
-                  />
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-green-600" />
-                    Q&A Sentiment
-                  </CardTitle>
-                  <CardDescription>
-                    Sentiment analysis of Q&A session interactions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <SentimentChart
-                    data={mockData.quarters.map((quarter, index) => ({
-                      quarter,
-                      sentiment: mockData.qaSentiment[index],
-                    }))}
-                    type="qa"
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="trends" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-purple-600" />
-                  Quarter-over-Quarter Tone Changes
-                </CardTitle>
-                <CardDescription>
-                  Comparative analysis of sentiment shifts across quarters
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ToneChangeChart data={mockData} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="strategic" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-orange-600" />
-                  Strategic Focus Areas
-                </CardTitle>
-                <CardDescription>
-                  Key themes and initiatives emphasized each quarter
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <StrategicFocusChart data={mockData} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="transcripts" className="space-y-6">
-            <TranscriptViewer data={mockData} />
-          </TabsContent>
-        </Tabs>
       </div>
-    </div>
-  );
+    );
+  }
 }
