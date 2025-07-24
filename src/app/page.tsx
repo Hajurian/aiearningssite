@@ -67,7 +67,11 @@ const mockData = {
   },
 };
 
-export default function EarningsAnalyzer() {
+export default async function EarningsAnalyzer() {
+  const res = await fetch("http://localhost:3000/api/aianalysis", {
+    method: "GET",
+  });
+  const data = await res.json();
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
