@@ -11,7 +11,6 @@ async function fetchFullPage(url) {
 
   const fullHtml = await page.content();
 
-  // Save to file
   const filename = `page_dump.html`;
   writeFileSync(filename, fullHtml);
   console.log(`Saved full page HTML to ${filename}`);
@@ -19,16 +18,6 @@ async function fetchFullPage(url) {
   await browser.close();
   return fullHtml;
 }
-
-(async () => {
-  const url =
-    "https://www.fool.com/earnings/call-transcripts/2024/05/29/nvidia-nvda-q1-2025-earnings-call-transcript/"; //I replaced the URLs manually to get the data
-  await fetchFullPage(url);
-
-  const text = extractTranscript("page_dump.html");
-  writeFileSync("transcripts/q1_earnings.txt", text);
-  console.log("Extracted text saved to page_text.txt");
-})();
 
 function extractTranscript(filePath) {
   const html = readFileSync(filePath, "utf8");
@@ -46,3 +35,12 @@ function extractTranscript(filePath) {
 
   return paragraphs.join("\n\n");
 }
+(async () => {
+  const url =
+    "https://www.fool.com/earnings/call-transcripts/2024/05/29/nvidia-nvda-q1-2025-earnings-call-transcript/"; //I replaced the URLs manually to get the data
+  await fetchFullPage(url);
+
+  const text = extractTranscript("page_dump.html");
+  writeFileSync("transcripts/q1_earnings.txt", text);
+  console.log("Extracted text saved to page_text.txt");
+})();
