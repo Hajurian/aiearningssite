@@ -53,19 +53,21 @@ export function StrategicFocusChart({ data }: StrategicFocusChartProps) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {data.strategicFocuses[quarter]?.map((focus, index) => (
-                <Badge
-                  key={focus}
-                  variant="secondary"
-                  className={`${getThemeColor(
-                    focus,
-                    index
-                  )} flex items-center gap-1`}
-                >
-                  {getThemeIcon(focus)}
-                  {focus}
-                </Badge>
-              ))}
+              {data.strategicFocuses[quarter]
+                ?.slice(0, 5)
+                .map((focus, index) => (
+                  <Badge
+                    key={focus}
+                    variant="secondary"
+                    className={`${getThemeColor(
+                      focus,
+                      index
+                    )} flex items-center gap-1`}
+                  >
+                    {getThemeIcon(focus)}
+                    {focus}
+                  </Badge>
+                ))}
             </div>
           </CardContent>
         </Card>
