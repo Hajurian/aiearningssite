@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SentimentChart } from "@/components/SentimentChart";
 import { StrategicFocusChart } from "@/components/StrategicFocus";
@@ -23,10 +22,22 @@ import { fileURLToPath } from "url";
 import path from "path";
 import { readFileSync } from "fs";
 
+export const dynamic = "force-dynamic";
 interface ExtractedSummary {
   managementSentiment: number;
   qaSentiment: number;
   strategicFocuses: string[];
+}
+interface QuarterAnalysis {
+  finalSummary: string;
+}
+
+interface Analysis {
+  [quarter: string]: QuarterAnalysis;
+}
+interface Transcription {
+  quarter: string;
+  text: string;
 }
 
 function extractSummaryData(finalSummary: string): ExtractedSummary | null {
@@ -59,7 +70,10 @@ function getJSONOutput(fileLocation: string) {
   const jsonOutput = JSON.parse(raw);
   return jsonOutput;
 }
-function formatAnalysisArrays(analysis: any, transcriptions: any) {
+function formatAnalysisArrays(
+  analysis: Analysis,
+  transcriptions: Transcription[]
+) {
   const QUARTERS = ["Q1", "Q2", "Q3", "Q4"];
   const managementSentiment: number[] = [];
   const qaSentiment: number[] = [];
