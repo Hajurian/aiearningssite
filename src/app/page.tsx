@@ -19,59 +19,88 @@ import {
   Target,
   BarChart3,
 } from "lucide-react";
+import { fileURLToPath } from "url";
+import path from "path";
+import { readFileSync } from "fs";
 
-// Mock data representing NVIDIA earnings analysis
-const mockData = {
-  quarters: ["Q1 2024", "Q2 2024", "Q3 2024", "Q4 2024"],
-  managementSentiment: [0.75, 0.82, 0.78, 0.85],
-  qaSentiment: [0.65, 0.72, 0.68, 0.76],
-  strategicFocuses: {
-    "Q1 2024": [
-      "AI Infrastructure",
-      "Data Center Growth",
-      "Gaming Recovery",
-      "Automotive AI",
-      "Cloud Partnerships",
-    ],
-    "Q2 2024": [
-      "Generative AI Boom",
-      "H100 Demand",
-      "Enterprise AI",
-      "Edge Computing",
-      "Software Revenue",
-    ],
-    "Q3 2024": [
-      "AI Sovereignty",
-      "Omniverse Expansion",
-      "Robotics Platform",
-      "Healthcare AI",
-      "Sustainable Computing",
-    ],
-    "Q4 2024": [
-      "AI Agents",
-      "Blackwell Architecture",
-      "Digital Twins",
-      "Autonomous Vehicles",
-      "Quantum Computing",
-    ],
-  },
-  transcripts: {
-    "Q1 2024":
-      "Management prepared remarks focused heavily on the unprecedented demand for AI infrastructure...",
-    "Q2 2024":
-      "CEO Jensen Huang emphasized the transformative impact of generative AI across industries...",
-    "Q3 2024":
-      "The quarter demonstrated continued momentum in AI adoption with record data center revenue...",
-    "Q4 2024":
-      "Looking ahead, we see tremendous opportunities in AI agents and autonomous systems...",
-  },
-};
+interface ExtractedSummary {
+  managementSentiment: number;
+  qaSentiment: number;
+  strategicFocuses: string[];
+}
+
+function extractSummaryData(finalSummary: string): ExtractedSummary | null {
+  // Match the JSON object inside the string using a regex
+  const jsonMatch = finalSummary.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) return null;
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    return {
+      managementSentiment: parsed.managementSentiment ?? 0,
+      qaSentiment: parsed.qaSentiment ?? 0,
+      strategicFocuses: Array.isArray(parsed.strategicFocuses)
+        ? parsed.strategicFocuses
+        : [],
+    };
+  } catch (err) {
+    console.error("Failed to parse summary JSON:", err);
+    return null;
+  }
+}
+
+function getJSONOutput(fileLocation: string) {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const transcriptFile = path.join(__dirname, fileLocation);
+  // Read and parse JSON
+  const raw = readFileSync(transcriptFile, "utf8");
+  const jsonOutput = JSON.parse(raw);
+  return jsonOutput;
+}
+function formatAnalysisArrays(analysis: any, transcriptions: any) {
+  const QUARTERS = ["Q1", "Q2", "Q3", "Q4"];
+  const managementSentiment: number[] = [];
+  const qaSentiment: number[] = [];
+  const strategicFocuses: Record<string, string[]> = {};
+  const transcriptionArray: Record<string, string> = {};
+  for (const quarter in QUARTERS) {
+    managementSentiment.push(
+      extractSummaryData(analysis[QUARTERS[quarter]].finalSummary)
+        ?.managementSentiment || 0
+    );
+    qaSentiment.push(
+      extractSummaryData(analysis[QUARTERS[quarter]].finalSummary)
+        ?.qaSentiment || 0
+    );
+    strategicFocuses[QUARTERS[quarter]] =
+      extractSummaryData(analysis[QUARTERS[quarter]].finalSummary)
+        ?.strategicFocuses || [];
+    transcriptionArray[QUARTERS[quarter]] = transcriptions[quarter].text;
+  }
+  return {
+    quarters: QUARTERS,
+    managementSentiment,
+    qaSentiment,
+    strategicFocuses,
+    transcripts: transcriptionArray,
+  };
+}
 
 export default async function EarningsAnalyzer() {
   const res = await fetch("http://localhost:3000/api/aianalysis", {
     method: "GET",
   });
   if (res.status == 200) {
+    //1. Get transcripts
+    const transcriptions = getJSONOutput("../transcripts/transcripts.json");
+
+    //2. Get AI analysis
+    const AIAnalysis = getJSONOutput("../transcripts/analysis.json");
+    //3. Format data AI data in a way that is presentable
+    const data = formatAnalysisArrays(AIAnalysis, transcriptions);
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
         <div className="max-w-7xl mx-auto space-y-6">
@@ -86,7 +115,7 @@ export default async function EarningsAnalyzer() {
           </div>
 
           {/* Overview Cards */}
-          <AnalysisOverview data={mockData} />
+          <AnalysisOverview data={data} />
 
           {/* Main Content */}
           <Tabs defaultValue="sentiment" className="space-y-6">
@@ -132,9 +161,9 @@ export default async function EarningsAnalyzer() {
                   </CardHeader>
                   <CardContent>
                     <SentimentChart
-                      data={mockData.quarters.map((quarter, index) => ({
+                      data={data.quarters.map((quarter, index) => ({
                         quarter,
-                        sentiment: mockData.managementSentiment[index],
+                        sentiment: data.managementSentiment[index],
                       }))}
                       type="management"
                     />
@@ -153,9 +182,9 @@ export default async function EarningsAnalyzer() {
                   </CardHeader>
                   <CardContent>
                     <SentimentChart
-                      data={mockData.quarters.map((quarter, index) => ({
+                      data={data.quarters.map((quarter, index) => ({
                         quarter,
-                        sentiment: mockData.qaSentiment[index],
+                        sentiment: data.qaSentiment[index],
                       }))}
                       type="qa"
                     />
@@ -176,7 +205,7 @@ export default async function EarningsAnalyzer() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ToneChangeChart data={mockData} />
+                  <ToneChangeChart data={data} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -193,13 +222,13 @@ export default async function EarningsAnalyzer() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <StrategicFocusChart data={mockData} />
+                  <StrategicFocusChart data={data} />
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="transcripts" className="space-y-6">
-              <TranscriptViewer data={mockData} />
+              <TranscriptViewer data={data} />
             </TabsContent>
           </Tabs>
         </div>
