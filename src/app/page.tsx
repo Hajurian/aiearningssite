@@ -21,6 +21,7 @@ import {
 import { fileURLToPath } from "url";
 import path from "path";
 import { readFileSync } from "fs";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 interface ExtractedSummary {
@@ -103,7 +104,10 @@ function formatAnalysisArrays(
 }
 
 export default async function EarningsAnalyzer() {
-  const res = await fetch("http://localhost:3000/api/aianalysis", {
+  const host = (await headers()).get("host"); // "localhost:3000" in dev, "yourdomain.com" in prod
+  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+  const baseURL = `${protocol}://${host}`;
+  const res = await fetch(`${baseURL}/api/aianalysis`, {
     method: "GET",
   });
   if (res.status == 200) {
