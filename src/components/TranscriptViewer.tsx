@@ -36,7 +36,7 @@ export function TranscriptViewer({ data }: TranscriptViewerProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
-        {data.quarters.map((quarter, index) => (
+        {data.quarters.map((quarter) => (
           <Button
             key={quarter}
             variant={selectedQuarter === quarter ? "default" : "outline"}
