@@ -89,7 +89,7 @@ export function TranscriptViewer({ data }: TranscriptViewerProps) {
         <CardContent>
           <ScrollArea className="h-[600px] w-full rounded-md border p-4">
             <div className="whitespace-pre-wrap text-sm leading-relaxed">
-              {/* {fullTranscripts[selectedQuarter as keyof typeof fullTranscripts]} */}
+              {data.transcripts[selectedQuarter]}
             </div>
           </ScrollArea>
         </CardContent>
