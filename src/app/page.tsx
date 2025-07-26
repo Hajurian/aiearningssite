@@ -18,10 +18,6 @@ import {
   Target,
   BarChart3,
 } from "lucide-react";
-import { fileURLToPath } from "url";
-import path from "path";
-import { readFileSync } from "fs";
-import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 interface ExtractedSummary {
@@ -62,13 +58,12 @@ function extractSummaryData(finalSummary: string): ExtractedSummary | null {
   }
 }
 
-function getJSONOutput(fileLocation: string) {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const transcriptFile = path.join(__dirname, fileLocation);
-  // Read and parse JSON
-  const raw = readFileSync(transcriptFile, "utf8");
-  const jsonOutput = JSON.parse(raw);
+async function getJSONOutput(fileLocation: string) {
+  const raw = await fetch(
+    `${process.env.NEXT_PUBLIC_URL}/transcripts/${fileLocation}`
+  );
+  if (!raw.ok) throw new Error(`Failed to load ${fileLocation}`);
+  const jsonOutput = await raw.json();
   return jsonOutput;
 }
 function formatAnalysisArrays(
@@ -110,10 +105,10 @@ export default async function EarningsAnalyzer() {
   });
   if (res.status == 200) {
     //1. Get transcripts
-    const transcriptions = getJSONOutput("../transcripts/transcripts.json");
+    const transcriptions = await getJSONOutput("transcripts.json");
 
     //2. Get AI analysis
-    const AIAnalysis = getJSONOutput("../transcripts/analysis.json");
+    const AIAnalysis = await getJSONOutput("analysis.json");
     //3. Format data AI data in a way that is presentable
     const data = formatAnalysisArrays(AIAnalysis, transcriptions);
 
