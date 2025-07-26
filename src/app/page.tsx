@@ -104,9 +104,7 @@ function formatAnalysisArrays(
 }
 
 export default async function EarningsAnalyzer() {
-  const host = (await headers()).get("host"); // "localhost:3000" in dev, "yourdomain.com" in prod
-  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-  const baseURL = `${protocol}://${host}`;
+  const baseURL = process.env.NEXT_PUBLIC_URL;
   const res = await fetch(`${baseURL}/api/aianalysis`, {
     method: "GET",
   });
@@ -252,5 +250,7 @@ export default async function EarningsAnalyzer() {
         </div>
       </div>
     );
+  } else {
+    return <h1>Loading</h1>;
   }
 }
